@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard · Tour Package{% endblock %}
+{% block content %}
+<section class="page-heading"><p class="eyebrow">YOUR TRAVEL SPACE</p><h1>Hello, {{ g.user.full_name.split(' ')[0] }}.</h1><p class="lead">Your account is ready. The next development task will add the available tour package cards and booking inventory.</p></section>
+<section class="next-task-card"><div class="mini-icon">✦</div><div><h2>Package explorer is coming next</h2><p>We will add destination images, package dates, prices, ratings, and a booking button in the next task.</p></div></section>
+{% if g.user.role == 'admin' %}<section class="next-task-card"><div class="mini-icon">＋</div><div><h2>Admin account active</h2><p>The admin package management screen will be added in a later task.</p><a class="text-link" href="{{ url_for('main.admin_dashboard') }}">Open admin area →</a></div></section>{% endif %}
+{% endblock %}
