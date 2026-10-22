@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}My Bookings · Tour Package{% endblock %}
+{% block page_styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/customer-bookings.css') }}">{% endblock %}
+{% block content %}
+<section class="page-heading">
+  <p class="eyebrow">YOUR TRAVEL SPACE</p>
+  <h1>My bookings</h1>
+  <p class="lead">View your selected tour packages, change travel dates, or cancel a booking.</p>
+</section>
+<section class="customer-bookings">
+  {% for booking in bookings %}
+    <article class="customer-booking-card">
+      {% if booking['image_url'] %}
+        <img src="{{ booking['image_url'] }}" alt="{{ booking['package_title'] }} destination">
+      {% endif %}
+      <div class="customer-booking-content">
+        <h2>{{ booking['package_title'] }}</h2>
+        <p><strong>Travel dates:</strong> {{ booking['start_date'] }} – {{ booking['end_date'] }}</p>
+        <p><strong>Price per person:</strong> ${{ '%.2f'|format(booking['price']) }}</p>
+        <form method="post" action="{{ url_for('customer.reschedule_booking', booking_id=booking['booking_id']) }}" class="reschedule-form">
+          <h3>Reschedule dates</h3>
+          <label for="start-{{ booking['booking_id'] }}">New start date</label>
+          <input id="start-{{ booking['booking_id'] }}" type="date" name="start_date" value="{{ booking['start_date'] }}" required>
+          <label for="end-{{ booking['booking_id'] }}">New end date</label>
+          <input id="end-{{ booking['booking_id'] }}" type="date" name="end_date" value="{{ booking['end_date'] }}" required>
+          <button class="button secondary" type="submit">Save new dates</button>
+        </form>
+        <form method="post" action="{{ url_for('customer.cancel_booking', booking_id=booking['booking_id']) }}" onsubmit="return confirm('Cancel this booking?');">
+          <button class="button danger" type="submit">Cancel booking</button>
+        </form>
+      </div>
+    </article>
+  {% else %}
+    <div class="packages-empty">
+      <h2>No active bookings</h2>
+      <p>Your selected packages will appear here after you book them.</p>
+      <a class="button primary" href="{{ url_for('packages.listing') }}">Browse packages</a>
+    </div>
+  {% endfor %}
+</section>
+{% endblock %}
