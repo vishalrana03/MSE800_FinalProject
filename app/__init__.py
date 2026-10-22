@@ -19,6 +19,10 @@ def create_app():
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
     init_db(app)
 
-    from .routes import bp
-    app.register_blueprint(bp)
+    # Register the main blueprint first so its before_app_request hook loads g.user.
+    from .routes import bp as main_bp
+    app.register_blueprint(main_bp)
+
+    from .admin.routes import bp as admin_bp
+    app.register_blueprint(admin_bp)
     return app

@@ -1,8 +1,8 @@
 """Authentication and starter dashboard routes."""
 from functools import wraps
+import sqlite3
 
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
-import sqlite3
 
 from .db import get_db
 from .models import User
@@ -54,7 +54,6 @@ def signup():
         password = request.form.get("password", "")
         confirm_password = request.form.get("confirm_password", "")
         error = None
-
         if not full_name:
             error = "Please enter your full name."
         elif not email or "@" not in email or "." not in email.split("@")[-1]:
@@ -76,9 +75,7 @@ def signup():
                 session["user_id"] = user.id
                 flash("Your account has been created.", "success")
                 return redirect(url_for("main.dashboard"))
-
         flash(error, "error")
-
     return render_template("signup.html")
 
 
@@ -95,7 +92,6 @@ def signin():
             session["user_id"] = user.id
             flash(f"Welcome back, {user.full_name}.", "success")
             return redirect(url_for("main.dashboard"))
-
     return render_template("signin.html")
 
 
@@ -115,4 +111,5 @@ def dashboard():
 @bp.route("/admin")
 @admin_required
 def admin_dashboard():
-    return render_template("admin_dashboard.html")
+    # Redirect the existing menu link to the real admin blueprint.
+    return redirect(url_for("admin.dashboard"))
