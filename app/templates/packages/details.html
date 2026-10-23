@@ -1,0 +1,31 @@
+{# Details page for one package.
+   Expects: package (id, name, city, description, price, duration_days, rating, image_url, start_date, end_date) #}
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/packages.css') }}">
+
+<section class="package-detail">
+  <a class="package-detail__back" href="{{ url_for('packages.listing') }}">Back to all packages</a>
+
+  <img class="package-detail__image"
+       src="{{ package.image_url or url_for('static', filename='images/placeholder.jpg') }}"
+       alt="{{ package.name }} in {{ package.city }}">
+
+  <div class="package-detail__content">
+    <p class="package-card__city">{{ package.city }}</p>
+    <h1>{{ package.name }}</h1>
+    <p>{{ package.description }}</p>
+
+    <dl class="package-detail__facts">
+      <dt>Dates</dt><dd>{{ package.start_date }} to {{ package.end_date }}</dd>
+      <dt>Length</dt><dd>{{ package.duration_days }} days</dd>
+      <dt>Rating</dt><dd>{{ package.rating }} / 5</dd>
+      <dt>Price</dt><dd>${{ package.price }} per person</dd>
+    </dl>
+
+    {# Booking is Sukhman's part: endpoint customer.book_package #}
+    <a class="btn" href="{{ url_for('customer.book_package', package_id=package.id) }}">Book this package</a>
+  </div>
+</section>
+{% endblock %}

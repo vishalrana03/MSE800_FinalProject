@@ -1,0 +1,36 @@
+{# Catalogue page: grid of package cards.
+   Expects: packages (list). Optional: cities (list of city names), selected_city (string).
+   Needs base.html with {% block content %}. #}
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/packages.css') }}">
+
+<section class="package-listing">
+  <h1>Tour packages</h1>
+
+  {# City filter: it starts working on Day 3 when the route sends `cities` #}
+  {% if cities %}
+  <form class="package-filter" method="get" action="{{ url_for('packages.listing') }}">
+    <label for="city">City</label>
+    <select id="city" name="city">
+      <option value="">All cities</option>
+      {% for city in cities %}
+      <option value="{{ city }}" {% if city == selected_city %}selected{% endif %}>{{ city }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn" type="submit">Filter</button>
+  </form>
+  {% endif %}
+
+  {% if packages %}
+  <div class="package-grid">
+    {% for package in packages %}
+      {% include "packages/_card.html" %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="package-empty">No packages match your search. Try another city.</p>
+  {% endif %}
+</section>
+{% endblock %}
