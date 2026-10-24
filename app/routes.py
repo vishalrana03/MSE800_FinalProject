@@ -1,10 +1,9 @@
-"""Authentication and starter dashboard routes."""
+"""Sign-in, sign-up, and general page routes."""
 from functools import wraps
 import sqlite3
 
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 
-from .db import get_db
 from .models import User
 
 bp = Blueprint("main", __name__)
@@ -105,11 +104,11 @@ def logout():
 @bp.route("/dashboard")
 @login_required
 def dashboard():
-    return render_template("dashboard.html")
+    """Use the package catalogue as the signed-in customer's dashboard."""
+    return redirect(url_for("packages.listing"))
 
 
 @bp.route("/admin")
 @admin_required
 def admin_dashboard():
-    # Redirect the existing menu link to the real admin blueprint.
     return redirect(url_for("admin.dashboard"))

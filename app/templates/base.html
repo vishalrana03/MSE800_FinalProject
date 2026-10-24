@@ -11,8 +11,12 @@
   <header class="topbar">
     <a class="brand" href="{{ url_for('main.home') }}"><span class="brand-mark">T</span> Tour Package</a>
     <nav>
+      <a href="{{ url_for('packages.listing') }}">Packages</a>
       {% if g.user %}
         <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+        {% if g.user.role == 'customer' %}
+          <a href="{{ url_for('customer.profile') }}">My bookings</a>
+        {% endif %}
         {% if g.user.role == 'admin' %}<a href="{{ url_for('main.admin_dashboard') }}">Admin</a>{% endif %}
         <span class="user-chip">{{ g.user.full_name }}</span>
         <form class="inline-form" action="{{ url_for('main.logout') }}" method="post"><button class="nav-button" type="submit">Sign out</button></form>

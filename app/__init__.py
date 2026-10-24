@@ -1,4 +1,4 @@
-"""Tour Package application factory."""
+"""Application setup for Tour Package."""
 import os
 from pathlib import Path
 
@@ -19,9 +19,15 @@ def create_app():
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
     init_db(app)
 
-    # Register the main blueprint first so its before_app_request hook loads g.user.
+    # Register authentication first so it loads the signed-in user for each request.
     from .routes import bp as main_bp
     app.register_blueprint(main_bp)
+
+    from .packages.routes import bp as packages_bp
+    app.register_blueprint(packages_bp)
+
+    from .customer.routes import bp as customer_bp
+    app.register_blueprint(customer_bp)
 
     from .admin.routes import bp as admin_bp
     app.register_blueprint(admin_bp)
