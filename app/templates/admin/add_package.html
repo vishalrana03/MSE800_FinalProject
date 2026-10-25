@@ -9,7 +9,7 @@
   <p class="lead">Only an administrator can add packages to the catalogue.</p>
   <form method="post" class="admin-package-form">
     <label for="title">Package title</label>
-    <input id="title" name="title" required value="{{ form.get('title', '') }}">
+    <input id="title" name="title" required maxlength="120" value="{{ form.get('title', '') }}">
     <label for="description">Package description</label>
     <textarea id="description" name="description" rows="3">{{ form.get('description', '') }}</textarea>
     <div class="admin-form-grid">
@@ -22,7 +22,7 @@
     <input id="image_url" type="url" name="image_url" placeholder="https://example.com/destination.jpg" value="{{ form.get('image_url', '') }}">
     <label for="destinations">Destinations (one per line)</label>
     <textarea id="destinations" name="destinations" rows="5" required placeholder="Sky Tower | Auckland | View across the city | https://example.com/sky-tower.jpg&#10;Viaduct Harbour | Auckland | Waterfront walk | https://example.com/harbour.jpg">{{ form.get('destinations', '') }}</textarea>
-    <small>Use this format: Place name | City | Description | Image URL. The image URL is optional; separate each destination with a new line.</small>
+    <small>Format: Place name | City | Description | Image URL. The image URL is optional. Use a new line for each destination.</small>
     <button class="button primary" type="submit">Save package</button>
   </form>
 </section>
