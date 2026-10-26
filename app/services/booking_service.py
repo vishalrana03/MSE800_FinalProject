@@ -1,14 +1,16 @@
-"""Simple booking rules used by the customer routes."""
+"""Booking rules shared by the customer booking routes."""
 from datetime import date
 
 from ..db import get_db
 
 
 class BookingServiceError(ValueError):
-    """Raised when a booking cannot be completed."""
+    """Raised when a booking does not meet the booking rules."""
 
 
 def _read_date(value, label):
+    if not value:
+        raise BookingServiceError(f"Please choose a {label}.")
     try:
         return date.fromisoformat(value)
     except (TypeError, ValueError) as error:
@@ -38,7 +40,7 @@ def _check_dates(package, start_date, end_date):
 
 
 def list_customer_bookings(user_id):
-    """Return only the signed-in customer's active bookings."""
+    """Return the active bookings belonging to one customer."""
     return get_db().execute(
         """SELECT b.id AS booking_id, b.start_date, b.end_date, b.status,
                   b.created_at, p.id AS package_id, p.title AS package_title,
@@ -54,7 +56,7 @@ def list_customer_bookings(user_id):
 
 
 def create_booking(user_id, package_id, start_date, end_date):
-    """Create a booking if the package and dates are valid."""
+    """Create one booking after checking availability, dates, and duplicates."""
     db = get_db()
     package = _get_package(package_id)
     _check_dates(package, start_date, end_date)
@@ -88,7 +90,7 @@ def cancel_booking(user_id, booking_id):
 
 
 def reschedule_booking(user_id, booking_id, start_date, end_date):
-    """Change dates for one of this customer's active bookings."""
+    """Change the dates for an active booking owned by the signed-in customer."""
     db = get_db()
     booking = db.execute(
         """SELECT b.package_id, p.start_date AS package_start,

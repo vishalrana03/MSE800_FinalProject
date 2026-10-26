@@ -37,8 +37,10 @@ def profile():
 @bp.route("/packages/<int:package_id>/book", methods=("POST",))
 @customer_required
 def book_package(package_id):
+    """Create a booking from the POST form on the package details page."""
     start_date = request.form.get("start_date", "").strip()
     end_date = request.form.get("end_date", "").strip()
+
     try:
         create_booking(g.user.id, package_id, start_date, end_date)
     except BookingServiceError as error:
