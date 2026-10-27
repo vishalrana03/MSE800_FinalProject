@@ -1,31 +1,51 @@
-{# Details page for one package.
-   Expects: package (id, name, city, description, price, duration_days, rating, image_url, start_date, end_date) #}
-{% extends "base.html" %}
-
+{% extends 'base.html' %}
+{% block title %}{{ package['title'] }} · Tour Package{% endblock %}
+{% block page_styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/packages.css') }}">{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/packages.css') }}">
+<section class="package-details">
+  <a class="text-link" href="{{ url_for('packages.listing') }}">← Back to packages</a>
 
-<section class="package-detail">
-  <a class="package-detail__back" href="{{ url_for('packages.listing') }}">Back to all packages</a>
+  {% if package['image_url'] %}
+    <img class="package-details-image" src="{{ package['image_url'] }}" alt="Destination for {{ package['title'] }}">
+  {% endif %}
 
-  <img class="package-detail__image"
-       src="{{ package.image_url or url_for('static', filename='images/placeholder.jpg') }}"
-       alt="{{ package.name }} in {{ package.city }}">
+  <p class="eyebrow">TOUR PACKAGE</p>
+  <h1>{{ package['title'] }}</h1>
+  <p class="lead">{{ package['description'] }}</p>
+  {% if package['city'] %}<p><strong>City:</strong> {{ package['city'] }}</p>{% endif %}
 
-  <div class="package-detail__content">
-    <p class="package-card__city">{{ package.city }}</p>
-    <h1>{{ package.name }}</h1>
-    <p>{{ package.description }}</p>
-
-    <dl class="package-detail__facts">
-      <dt>Dates</dt><dd>{{ package.start_date }} to {{ package.end_date }}</dd>
-      <dt>Length</dt><dd>{{ package.duration_days }} days</dd>
-      <dt>Rating</dt><dd>{{ package.rating }} / 5</dd>
-      <dt>Price</dt><dd>${{ package.price }} per person</dd>
-    </dl>
-
-    {# Booking is Sukhman's part: endpoint customer.book_package #}
-    <a class="btn" href="{{ url_for('customer.book_package', package_id=package.id) }}">Book this package</a>
+  <div class="package-detail-summary">
+    <span><strong>Travel window</strong><br>{{ package['start_date'] }} – {{ package['end_date'] }}</span>
+    <span><strong>Length</strong><br>{{ package['duration_days'] }} days</span>
+    <span><strong>Rating</strong><br>★ {{ '%.1f'|format(package['rating']) }}/5</span>
+    <span><strong>Price</strong><br>${{ '%.2f'|format(package['price']) }} per person</span>
   </div>
+
+  {% if locations %}
+    <h2>Places included</h2>
+    <div class="destination-list">
+      {% for location in locations %}
+        <article class="destination-item">
+          {% if location['image_url'] %}<img src="{{ location['image_url'] }}" alt="{{ location['name'] }}">{% endif %}
+          <div><h3>{{ location['name'] }}</h3><p>{{ location['city'] }}</p><p>{{ location['description'] }}</p></div>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if g.user is none %}
+    <p>Please <a href="{{ url_for('main.signin') }}">sign in</a> or <a href="{{ url_for('main.signup') }}">create an account</a> to book this package.</p>
+  {% elif g.user.role == 'customer' %}
+    <form class="booking-date-form" method="post" action="{{ url_for('customer.book_package', package_id=package['id']) }}">
+      <h2>Choose your dates</h2>
+      <label for="start_date">Start date</label>
+      <input id="start_date" name="start_date" type="date" min="{{ package['start_date'] }}" max="{{ package['end_date'] }}" value="{{ package['start_date'] }}" required>
+      <label for="end_date">End date</label>
+      <input id="end_date" name="end_date" type="date" min="{{ package['start_date'] }}" max="{{ package['end_date'] }}" value="{{ package['end_date'] }}" required>
+      <button class="button primary" type="submit">Book this package</button>
+    </form>
+  {% else %}
+    <p>Administrator accounts manage packages; use a customer account to make a booking.</p>
+  {% endif %}
 </section>
 {% endblock %}
