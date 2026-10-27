@@ -1,36 +1,30 @@
-{# Catalogue page: grid of package cards.
-   Expects: packages (list). Optional: cities (list of city names), selected_city (string).
-   Needs base.html with {% block content %}. #}
-{% extends "base.html" %}
-
+{% extends 'base.html' %}
+{% block title %}Explore Tour Packages · Tour Package{% endblock %}
+{% block page_styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/packages.css') }}">{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/packages.css') }}">
-
-<section class="package-listing">
-  <h1>Tour packages</h1>
-
-  {# City filter: it starts working on Day 3 when the route sends `cities` #}
-  {% if cities %}
-  <form class="package-filter" method="get" action="{{ url_for('packages.listing') }}">
-    <label for="city">City</label>
-    <select id="city" name="city">
-      <option value="">All cities</option>
+<section class="packages-heading">
+  <p class="eyebrow">FIND YOUR NEXT ADVENTURE</p>
+  <h1>Explore tour packages</h1>
+  <p class="lead">Compare destinations, travel dates, prices, and ratings.</p>
+  <form class="city-filter" method="get" action="{{ url_for('packages.listing') }}">
+    <label for="city">Filter by city</label>
+    <select name="city" id="city">
+      <option value="" {% if not selected_city %}selected{% endif %}>All cities</option>
       {% for city in cities %}
-      <option value="{{ city }}" {% if city == selected_city %}selected{% endif %}>{{ city }}</option>
+        <option value="{{ city['city'] }}" {% if selected_city|lower == city['city']|lower %}selected{% endif %}>{{ city['city'] }}</option>
       {% endfor %}
     </select>
-    <button class="btn" type="submit">Filter</button>
+    <button class="button secondary" type="submit">Filter</button>
   </form>
-  {% endif %}
-
-  {% if packages %}
-  <div class="package-grid">
-    {% for package in packages %}
-      {% include "packages/_card.html" %}
-    {% endfor %}
-  </div>
+</section>
+<section class="package-grid">
+  {% for package in packages %}
+    {% include 'packages/_card.html' %}
   {% else %}
-  <p class="package-empty">No packages match your search. Try another city.</p>
-  {% endif %}
+    <div class="packages-empty">
+      <h2>No packages to show yet</h2>
+      <p>Try another city or check back when the administrator adds packages.</p>
+    </div>
+  {% endfor %}
 </section>
 {% endblock %}

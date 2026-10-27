@@ -1,5 +1,5 @@
-"""Routes for browsing packages and viewing package details."""
-from flask import Blueprint, abort, g, render_template, request
+"""Routes for browsing tour packages and their destinations."""
+from flask import Blueprint, abort, flash, g, redirect, render_template, request, url_for
 
 from ..db import get_db
 
@@ -15,8 +15,9 @@ def listing():
     if g.user is not None and g.user.role == "customer":
         customer_id = g.user.id
 
+    # Return rows with a named city column; the template reads city['city'].
     cities = db.execute(
-        """SELECT DISTINCT l.city
+        """SELECT DISTINCT l.city AS city
            FROM locations l
            JOIN package_locations pl ON pl.location_id = l.id
            JOIN tour_packages p ON p.id = pl.package_id
@@ -52,7 +53,10 @@ def listing():
     ).fetchall()
 
     return render_template(
-        "packages/listing.html", packages=packages, cities=cities, selected_city=selected_city
+        "packages/listing.html",
+        packages=packages,
+        cities=cities,
+        selected_city=selected_city,
     )
 
 
@@ -60,27 +64,35 @@ def listing():
 def details(package_id):
     db = get_db()
     package = db.execute(
-        "SELECT * FROM tour_packages WHERE id = ? AND is_active = 1", (package_id,)
+        """SELECT p.*,
+                  CAST(julianday(p.end_date) - julianday(p.start_date) AS INTEGER) + 1 AS duration_days,
+                  GROUP_CONCAT(DISTINCT l.city) AS city
+           FROM tour_packages p
+           LEFT JOIN package_locations pl ON pl.package_id = p.id
+           LEFT JOIN locations l ON l.id = pl.location_id
+           WHERE p.id = ? AND p.is_active = 1
+           GROUP BY p.id""",
+        (package_id,),
     ).fetchone()
     if package is None:
         abort(404)
 
+    # A package already booked by this customer is managed from their profile.
     if g.user is not None and g.user.role == "customer":
         existing = db.execute(
             "SELECT id FROM bookings WHERE user_id = ? AND package_id = ? AND status = 'booked'",
             (g.user.id, package_id),
         ).fetchone()
         if existing is not None:
-            # The package is already in this customer's inventory.
-            from flask import flash, redirect, url_for
-            flash("You have already booked this package. You can manage it in My bookings.", "info")
+            flash("You have already booked this package. Manage it in My bookings.", "info")
             return redirect(url_for("customer.profile"))
 
     locations = db.execute(
         """SELECT l.id, l.name, l.city, l.description, l.image_url
            FROM locations l
            JOIN package_locations pl ON pl.location_id = l.id
-           WHERE pl.package_id = ? ORDER BY pl.position, l.name""",
+           WHERE pl.package_id = ?
+           ORDER BY pl.position, l.name""",
         (package_id,),
     ).fetchall()
     return render_template("packages/details.html", package=package, locations=locations)
