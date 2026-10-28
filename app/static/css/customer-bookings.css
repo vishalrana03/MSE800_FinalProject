@@ -1,11 +1,23 @@
+.booking-section,
+.booking-history { margin: 2rem 0; }
 .booking-list { display: grid; gap: 1.25rem; }
-.booking-card { display: grid; grid-template-columns: minmax(180px, 280px) 1fr; gap: 1.25rem; padding: 1.25rem; border: 1px solid #e1e5eb; border-radius: 18px; background: #fff; }
-.booking-card > img { width: 100%; height: 100%; max-height: 260px; object-fit: cover; border-radius: 12px; }
-.booking-body h2 { margin-top: 0; }
+.booking-card { display: grid; grid-template-columns: minmax(180px, 280px) minmax(0, 1fr); gap: 1.25rem; padding: 1.25rem; border: 1px solid #e1e5eb; border-radius: 18px; background: #fff; }
+.booking-card > img { display: block; width: 100%; height: 100%; max-height: 260px; object-fit: cover; border-radius: 12px; }
+.booking-body { min-width: 0; }
+.booking-body h3 { margin-top: 0; }
 .booking-price { color: #3d5b81; font-weight: 600; }
-.reschedule-form { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem .8rem; margin: 1rem 0; padding: 1rem; border-radius: 12px; background: #f5f7fa; }
-.reschedule-form h3 { grid-column: 1 / -1; margin: 0; }
+.reschedule-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .55rem .8rem; margin: 1rem 0; padding: 1rem; border-radius: 12px; background: #f5f7fa; }
+.reschedule-form h4 { grid-column: 1 / -1; margin: 0; }
 .reschedule-form input { width: 100%; min-width: 0; padding: .65rem; border: 1px solid #ccd3dc; border-radius: 8px; }
 .reschedule-form button { grid-column: 1 / -1; justify-self: start; }
 .button.danger { background: #a92d3d; color: #fff; }
-@media (max-width: 680px) { .booking-card { grid-template-columns: 1fr; } .booking-card > img { height: 200px; } }
+.cancelled-booking-list { display: grid; gap: .75rem; }
+.cancelled-booking-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; border: 1px solid #e1e5eb; border-radius: 12px; background: #f8fafc; }
+.cancelled-booking-card h3 { margin: 0 0 .35rem; }
+.cancelled-booking-card p { margin: 0; }
+.booking-status--cancelled { flex: 0 0 auto; padding: .35rem .65rem; border-radius: 999px; background: #fbe8e8; color: #8d202a; font-size: .85rem; font-weight: 700; }
+@media (max-width: 680px) {
+  .booking-card { grid-template-columns: 1fr; }
+  .booking-card > img { height: 200px; }
+  .cancelled-booking-card { align-items: flex-start; flex-direction: column; }
+}
