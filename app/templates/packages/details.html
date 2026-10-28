@@ -2,11 +2,11 @@
 {% block title %}{{ package['title'] }} · Tour Package{% endblock %}
 {% block page_styles %}<link rel="stylesheet" href="{{ url_for('static', filename='css/packages.css') }}">{% endblock %}
 {% block content %}
-<section class="package-details">
+<section class="package-detail">
   <a class="text-link" href="{{ url_for('packages.listing') }}">← Back to packages</a>
 
   {% if package['image_url'] %}
-    <img class="package-details-image" src="{{ package['image_url'] }}" alt="Destination for {{ package['title'] }}">
+    <img class="package-detail__image" src="{{ package['image_url'] }}" alt="Destination for {{ package['title'] }}">
   {% endif %}
 
   <p class="eyebrow">TOUR PACKAGE</p>
@@ -15,10 +15,10 @@
   {% if package['city'] %}<p><strong>City:</strong> {{ package['city'] }}</p>{% endif %}
 
   <div class="package-detail-summary">
-    <span><strong>Travel window</strong><br>{{ package['start_date'] }} – {{ package['end_date'] }}</span>
-    <span><strong>Length</strong><br>{{ package['duration_days'] }} days</span>
-    <span><strong>Rating</strong><br>★ {{ '%.1f'|format(package['rating']) }}/5</span>
-    <span><strong>Price</strong><br>${{ '%.2f'|format(package['price']) }} per person</span>
+    <span><strong>Travel window:</strong><br>{{ package['start_date'] }} – {{ package['end_date'] }}</span>
+    <span><strong>Length:</strong><br>{{ package['duration_days'] }} days</span>
+    <span><strong>Rating:</strong><br>★ {{ '%.1f'|format(package['rating']) }}/5</span>
+    <span><strong>Price:</strong><br>${{ '%.2f'|format(package['price']) }} per person</span>
   </div>
 
   {% if locations %}
@@ -27,7 +27,10 @@
       {% for location in locations %}
         <article class="destination-item">
           {% if location['image_url'] %}<img src="{{ location['image_url'] }}" alt="{{ location['name'] }}">{% endif %}
-          <div><h3>{{ location['name'] }}</h3><p>{{ location['city'] }}</p><p>{{ location['description'] }}</p></div>
+          <div><h3>{{ location['name'] }}</h3><p>{{ location['city'] }}</p>
+            {% if location['description'] and not location['description'].startswith('http') %}
+            <p>{{ location['description'] }}</p>
+            {% endif %}</div>
         </article>
       {% endfor %}
     </div>

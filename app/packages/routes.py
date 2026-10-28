@@ -27,6 +27,7 @@ def listing():
 
     packages = db.execute(
         """SELECT p.id, p.title, p.description, p.start_date, p.end_date,
+                  CAST(julianday(p.end_date) - julianday(p.start_date) AS INTEGER) + 1 AS duration_days,
                   p.price, p.rating, p.image_url,
                   GROUP_CONCAT(DISTINCT l.city) AS city
            FROM tour_packages p
