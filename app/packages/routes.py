@@ -1,4 +1,4 @@
-"""Routes for browsing tour packages and their destinations."""
+"""Routes for browsing the available tour packages."""
 from flask import Blueprint, abort, flash, g, redirect, render_template, request, url_for
 
 from ..db import get_db
@@ -15,7 +15,6 @@ def listing():
     if g.user is not None and g.user.role == "customer":
         customer_id = g.user.id
 
-    # Return rows with a named city column; the template reads city['city'].
     cities = db.execute(
         """SELECT DISTINCT l.city AS city
            FROM locations l
@@ -27,7 +26,8 @@ def listing():
 
     packages = db.execute(
         """SELECT p.id, p.title, p.description, p.start_date, p.end_date,
-                  CAST(julianday(p.end_date) - julianday(p.start_date) AS INTEGER) + 1 AS duration_days,
+                  CAST(julianday(p.end_date) - julianday(p.start_date) AS INTEGER) + 1
+                      AS duration_days,
                   p.price, p.rating, p.image_url,
                   GROUP_CONCAT(DISTINCT l.city) AS city
            FROM tour_packages p
@@ -39,13 +39,16 @@ def listing():
                      SELECT 1
                      FROM package_locations pl2
                      JOIN locations l2 ON l2.id = pl2.location_id
-                     WHERE pl2.package_id = p.id AND LOWER(l2.city) = LOWER(?)
+                     WHERE pl2.package_id = p.id
+                       AND LOWER(l2.city) = LOWER(?)
                  )
              )
              AND (
                  ? IS NULL OR NOT EXISTS (
                      SELECT 1 FROM bookings b
-                     WHERE b.package_id = p.id AND b.user_id = ? AND b.status = 'booked'
+                     WHERE b.package_id = p.id
+                       AND b.user_id = ?
+                       AND b.status = 'booked'
                  )
              )
            GROUP BY p.id
@@ -58,6 +61,7 @@ def listing():
         packages=packages,
         cities=cities,
         selected_city=selected_city,
+        is_customer=customer_id is not None,
     )
 
 
@@ -66,7 +70,8 @@ def details(package_id):
     db = get_db()
     package = db.execute(
         """SELECT p.*,
-                  CAST(julianday(p.end_date) - julianday(p.start_date) AS INTEGER) + 1 AS duration_days,
+                  CAST(julianday(p.end_date) - julianday(p.start_date) AS INTEGER) + 1
+                      AS duration_days,
                   GROUP_CONCAT(DISTINCT l.city) AS city
            FROM tour_packages p
            LEFT JOIN package_locations pl ON pl.package_id = p.id
@@ -78,10 +83,10 @@ def details(package_id):
     if package is None:
         abort(404)
 
-    # A package already booked by this customer is managed from their profile.
     if g.user is not None and g.user.role == "customer":
         existing = db.execute(
-            "SELECT id FROM bookings WHERE user_id = ? AND package_id = ? AND status = 'booked'",
+            """SELECT id FROM bookings
+               WHERE user_id = ? AND package_id = ? AND status = 'booked'""",
             (g.user.id, package_id),
         ).fetchone()
         if existing is not None:
