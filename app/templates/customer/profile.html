@@ -5,35 +5,57 @@
 <section class="page-heading">
   <p class="eyebrow">YOUR TRAVEL SPACE</p>
   <h1>My bookings</h1>
-  <p class="lead">View your selected packages, change dates, or cancel a booking.</p>
+  <p class="lead">View your trips, change dates, or cancel a booking.</p>
 </section>
-<section class="booking-list">
-  {% for booking in bookings %}
-    <article class="booking-card">
-      {% if booking['image_url'] %}<img src="{{ booking['image_url'] }}" alt="{{ booking['package_title'] }}" loading="lazy">{% endif %}
-      <div class="booking-body">
-        <h2>{{ booking['package_title'] }}</h2>
-        <p class="booking-price">${{ '%.2f'|format(booking['price']) }} per person · ★ {{ '%.1f'|format(booking['rating']) }}/5</p>
-        <p><strong>Booked dates:</strong> {{ booking['start_date'] }} – {{ booking['end_date'] }}</p>
-        <form class="reschedule-form" method="post" action="{{ url_for('customer.reschedule_booking', booking_id=booking['booking_id']) }}">
-          <h3>Reschedule dates</h3>
-          <label for="start-{{ booking['booking_id'] }}">New start date</label>
-          <input id="start-{{ booking['booking_id'] }}" name="start_date" type="date" min="{{ booking['package_start_date'] }}" max="{{ booking['package_end_date'] }}" value="{{ booking['start_date'] }}" required>
-          <label for="end-{{ booking['booking_id'] }}">New end date</label>
-          <input id="end-{{ booking['booking_id'] }}" name="end_date" type="date" min="{{ booking['package_start_date'] }}" max="{{ booking['package_end_date'] }}" value="{{ booking['end_date'] }}" required>
-          <button class="button secondary" type="submit">Update dates</button>
-        </form>
-        <form method="post" action="{{ url_for('customer.cancel_booking', booking_id=booking['booking_id']) }}" onsubmit="return confirm('Cancel this booking?');">
-          <button class="button danger" type="submit">Cancel booking</button>
-        </form>
+
+<section class="booking-section">
+  <h2>Active bookings</h2>
+  <div class="booking-list">
+    {% for booking in bookings %}
+      <article class="booking-card">
+        {% if booking['image_url'] %}<img src="{{ booking['image_url'] }}" alt="{{ booking['package_title'] }}" loading="lazy">{% endif %}
+        <div class="booking-body">
+          <h3>{{ booking['package_title'] }}</h3>
+          <p class="booking-price">${{ '%.2f'|format(booking['price']) }} per person · ★ {{ '%.1f'|format(booking['rating']) }}/5</p>
+          <p><strong>Booked dates:</strong> {{ booking['start_date'] }} – {{ booking['end_date'] }}</p>
+          <form class="reschedule-form" method="post" action="{{ url_for('customer.reschedule_booking', booking_id=booking['booking_id']) }}">
+            <h4>Reschedule dates</h4>
+            <label for="start-{{ booking['booking_id'] }}">New start date</label>
+            <input id="start-{{ booking['booking_id'] }}" name="start_date" type="date" min="{{ booking['package_start_date'] }}" max="{{ booking['package_end_date'] }}" value="{{ booking['start_date'] }}" required>
+            <label for="end-{{ booking['booking_id'] }}">New end date</label>
+            <input id="end-{{ booking['booking_id'] }}" name="end_date" type="date" min="{{ booking['package_start_date'] }}" max="{{ booking['package_end_date'] }}" value="{{ booking['end_date'] }}" required>
+            <button class="button secondary" type="submit">Update dates</button>
+          </form>
+          <form method="post" action="{{ url_for('customer.cancel_booking', booking_id=booking['booking_id']) }}" onsubmit="return confirm('Cancel this booking?');">
+            <button class="button danger" type="submit">Cancel booking</button>
+          </form>
+        </div>
+      </article>
+    {% else %}
+      <div class="packages-empty">
+        <h3>You have no active bookings</h3>
+        <p>When you book a package, it will appear here.</p>
+        <a class="button primary" href="{{ url_for('packages.listing') }}">Explore packages</a>
       </div>
-    </article>
-  {% else %}
-    <div class="packages-empty">
-      <h2>You have no active bookings yet</h2>
-      <p>Browse the package catalogue to choose your next trip.</p>
-      <a class="button primary" href="{{ url_for('packages.listing') }}">Explore packages</a>
-    </div>
-  {% endfor %}
+    {% endfor %}
+  </div>
 </section>
+
+{% if cancelled_bookings %}
+<section class="booking-history">
+  <h2>Cancelled bookings</h2>
+  <p>These bookings are no longer active. Their packages are available in the catalogue again.</p>
+  <div class="cancelled-booking-list">
+    {% for booking in cancelled_bookings %}
+      <article class="cancelled-booking-card">
+        <div>
+          <h3>{{ booking['package_title'] }}</h3>
+          <p>Previous dates: {{ booking['start_date'] }} – {{ booking['end_date'] }}</p>
+        </div>
+        <span class="booking-status booking-status--cancelled">Cancelled</span>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
 {% endblock %}

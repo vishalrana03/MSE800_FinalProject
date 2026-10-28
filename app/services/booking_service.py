@@ -39,30 +39,42 @@ def _check_dates(package, start_date, end_date):
         raise BookingServiceError("Choose dates inside the package's advertised date range.")
 
 
-def list_customer_bookings(user_id):
-    """Return the active bookings belonging to one customer."""
+def _list_bookings_for_status(user_id, status):
+    """Return this customer's bookings with their related package details."""
     return get_db().execute(
         """SELECT b.id AS booking_id, b.start_date, b.end_date, b.status,
-                  b.created_at, p.id AS package_id, p.title AS package_title,
+                  b.created_at, b.updated_at,
+                  p.id AS package_id, p.title AS package_title,
                   p.image_url, p.price, p.rating,
                   p.start_date AS package_start_date,
                   p.end_date AS package_end_date
            FROM bookings b
            JOIN tour_packages p ON p.id = b.package_id
-           WHERE b.user_id = ? AND b.status = 'booked'
-           ORDER BY b.created_at DESC, b.id DESC""",
-        (user_id,),
+           WHERE b.user_id = ? AND b.status = ?
+           ORDER BY b.updated_at DESC, b.id DESC""",
+        (user_id, status),
     ).fetchall()
 
 
+def list_customer_bookings(user_id):
+    """Return only the customer's active bookings."""
+    return _list_bookings_for_status(user_id, "booked")
+
+
+def list_cancelled_bookings(user_id):
+    """Return the customer's cancelled bookings as read-only history."""
+    return _list_bookings_for_status(user_id, "cancelled")
+
+
 def create_booking(user_id, package_id, start_date, end_date):
-    """Create one booking after checking availability, dates, and duplicates."""
+    """Create one booking after checking package availability and dates."""
     db = get_db()
     package = _get_package(package_id)
     _check_dates(package, start_date, end_date)
 
     existing = db.execute(
-        "SELECT id FROM bookings WHERE user_id = ? AND package_id = ? AND status = 'booked'",
+        """SELECT id FROM bookings
+           WHERE user_id = ? AND package_id = ? AND status = 'booked'""",
         (user_id, package_id),
     ).fetchone()
     if existing:
@@ -78,10 +90,11 @@ def create_booking(user_id, package_id, start_date, end_date):
 
 
 def cancel_booking(user_id, booking_id):
-    """Cancel an active booking only when it belongs to this customer."""
+    """Cancel only an active booking owned by this customer."""
     db = get_db()
     result = db.execute(
-        """UPDATE bookings SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP
+        """UPDATE bookings
+           SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP
            WHERE id = ? AND user_id = ? AND status = 'booked'""",
         (booking_id, user_id),
     )
@@ -90,12 +103,13 @@ def cancel_booking(user_id, booking_id):
 
 
 def reschedule_booking(user_id, booking_id, start_date, end_date):
-    """Change the dates for an active booking owned by the signed-in customer."""
+    """Change dates after checking the active booking belongs to this customer."""
     db = get_db()
     booking = db.execute(
         """SELECT b.package_id, p.start_date AS package_start,
                   p.end_date AS package_end, p.is_active
-           FROM bookings b JOIN tour_packages p ON p.id = b.package_id
+           FROM bookings b
+           JOIN tour_packages p ON p.id = b.package_id
            WHERE b.id = ? AND b.user_id = ? AND b.status = 'booked'""",
         (booking_id, user_id),
     ).fetchone()
@@ -109,10 +123,13 @@ def reschedule_booking(user_id, booking_id, start_date, end_date):
         start_date,
         end_date,
     )
-    db.execute(
-        """UPDATE bookings SET start_date = ?, end_date = ?, updated_at = CURRENT_TIMESTAMP
+    result = db.execute(
+        """UPDATE bookings
+           SET start_date = ?, end_date = ?, updated_at = CURRENT_TIMESTAMP
            WHERE id = ? AND user_id = ? AND status = 'booked'""",
         (start_date, end_date, booking_id, user_id),
     )
     db.commit()
+    if result.rowcount != 1:
+        raise BookingServiceError("The booking could not be updated. Please try again.")
     return True
