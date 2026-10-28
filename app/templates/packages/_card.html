@@ -14,8 +14,8 @@
     <p class="package-card__text">{{ package.short_description }}</p>
 
     <ul class="package-card__facts">
-      <li>{{ package.duration_days }} days</li>
-      <li>Rating {{ package.rating }}/5</li>
+      <li><strong>Duration:</strong> {{ package['duration_days'] }} days</li>
+      <li><strong>Rating:</strong> ★ {{ '%.1f'|format(package['rating']) }}/5</li>
     </ul>
 
     <div class="package-card__footer">
