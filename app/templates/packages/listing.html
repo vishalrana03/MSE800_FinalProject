@@ -15,6 +15,7 @@
       {% endfor %}
     </select>
     <button class="button secondary" type="submit">Filter</button>
+    {% if selected_city %}<a class="text-link" href="{{ url_for('packages.listing') }}">Clear filter</a>{% endif %}
   </form>
 </section>
 <section class="package-grid">
@@ -22,8 +23,14 @@
     {% include 'packages/_card.html' %}
   {% else %}
     <div class="packages-empty">
-      <h2>No packages to show yet</h2>
-      <p>Try another city or check back when the administrator adds packages.</p>
+      <h2>No available packages found</h2>
+      {% if is_customer %}
+        <p>You may have booked all available packages for this selection, or there may be no packages in this city.</p>
+        <p>Cancelled bookings become available in the catalogue again.</p>
+      {% else %}
+        <p>Try another city or check back when the administrator adds packages.</p>
+      {% endif %}
+      {% if selected_city %}<a class="button secondary" href="{{ url_for('packages.listing') }}">Show all cities</a>{% endif %}
     </div>
   {% endfor %}
 </section>

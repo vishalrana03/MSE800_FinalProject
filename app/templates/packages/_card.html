@@ -1,26 +1,22 @@
-{# One destination card. Used by listing.html inside a loop.
-   Expects: package (id, name, city, short_description, price, duration_days, rating, image_url)
-   Change field names here if db.py uses different ones. #}
 <article class="package-card">
-  <a class="package-card__image-link" href="{{ url_for('packages.details', package_id=package.id) }}">
-    <img class="package-card__image"
-         src="{{ package.image_url or url_for('static', filename='images/placeholder.jpg') }}"
-         alt="{{ package.name }} in {{ package.city }}">
+  <a class="package-card__image-link" href="{{ url_for('packages.details', package_id=package['id']) }}">
+    {% if package['image_url'] %}
+      <img class="package-card__image" src="{{ package['image_url'] }}" alt="Destination for {{ package['title'] }}" loading="lazy">
+    {% else %}
+      <div class="package-card__image package-card__image--placeholder" role="img" aria-label="No destination image available">Destination image</div>
+    {% endif %}
   </a>
-
   <div class="package-card__body">
-    <p class="package-card__city">{{ package.city }}</p>
-    <h3 class="package-card__title">{{ package.name }}</h3>
-    <p class="package-card__text">{{ package.short_description }}</p>
-
+    <p class="package-card__city">{{ package['city'] if package['city'] else 'Featured destination' }}</p>
+    <h2 class="package-card__title">{{ package['title'] }}</h2>
+    <p class="package-card__text">{{ package['description'] }}</p>
     <ul class="package-card__facts">
       <li><strong>Duration:</strong> {{ package['duration_days'] }} days</li>
       <li><strong>Rating:</strong> ★ {{ '%.1f'|format(package['rating']) }}/5</li>
     </ul>
-
     <div class="package-card__footer">
-      <span class="package-card__price">${{ package.price }}</span>
-      <a class="btn" href="{{ url_for('packages.details', package_id=package.id) }}">View details</a>
+      <p class="package-card__price">${{ '%.2f'|format(package['price']) }} <small>per person</small></p>
+      <a class="btn" href="{{ url_for('packages.details', package_id=package['id']) }}">View details</a>
     </div>
   </div>
 </article>
